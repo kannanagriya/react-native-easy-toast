@@ -12,13 +12,14 @@ import {
     View,
     Animated,
     Dimensions,
+    TouchableOpacity,
     Text,
     ViewPropTypes as RNViewPropTypes,
 } from 'react-native'
 
 import PropTypes from 'prop-types';
 const ViewPropTypes = RNViewPropTypes || View.propTypes;
-export const DURATION = { 
+export const DURATION = {
     LENGTH_SHORT: 500,
     FOREVER: 0,
 };
@@ -33,15 +34,17 @@ export default class Toast extends Component {
             isShow: false,
             text: '',
             opacityValue: new Animated.Value(this.props.opacity),
+            redirectData:''
         }
     }
 
-    show(text, duration, callback) {
+    show(text, duration, callback,redirectData) {
         this.duration = typeof duration === 'number' ? duration : DURATION.LENGTH_SHORT;
         this.callback = callback;
         this.setState({
             isShow: true,
             text: text,
+            redirectData:redirectData
         });
 
         this.animation = Animated.timing(
@@ -104,16 +107,21 @@ export default class Toast extends Component {
         }
 
         const view = this.state.isShow ?
-            <View
+            <TouchableOpacity
                 style={[styles.container, { top: pos }]}
                 pointerEvents="none"
+                onPress={()=>{
+                  if(this.props.onPress){
+                    this.props.onPress(this.state.redirectData);
+                  }
+                }}
             >
                 <Animated.View
                     style={[styles.content, { opacity: this.state.opacityValue }, this.props.style]}
                 >
                     {React.isValidElement(this.state.text) ? this.state.text : <Text style={this.props.textStyle}>{this.state.text}</Text>}
                 </Animated.View>
-            </View> : null;
+            </TouchableOpacity> : null;
         return view;
     }
 }
